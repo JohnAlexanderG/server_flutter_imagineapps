@@ -21,7 +21,6 @@ pool.connect((err, client, release) => {
       return console.error("Error al ejecutar la consulta", err.stack);
     }
     console.log("Conexión establecida con la base de datos");
-    console.log(result.rows[0]);
   });
 });
 

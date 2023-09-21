@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const pool = require("./database");
+const getUserByToken = require("./utils");
 
 const router = express.Router();
 
@@ -59,5 +60,24 @@ router.post("/login", async (req, res) => {
 
   return res.status(200).json({ token });
 });
+
+router.post("/tasks", async (req, res) => {
+  const { user_id: userId, title, description, due_date: dueDate, status } = req.body;
+  const token = req.headers.authorization;
+  const user = await getUserByToken(token);
+
+  if (!user) {
+    return res.status(401).json({ message: "Usuario no autorizado" });
+  }
+
+  const psgQuery =
+    "INSERT INTO tasks (user_id, title, description, due_date, status) VALUES ($1, $2, $3, $4, $5)";
+  const values = [userId, title, description, dueDate, status];
+  await pool.query(psgQuery, values);
+
+  return res.status(201).json({ message: "Tarea creada" });
+});
+
+
 
 module.exports = router;
