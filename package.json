@@ -10,7 +10,7 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "pgp": "^0.1.0"
+    "pg": "^8.11.3"
   },
   "devDependencies": {},
   "author": "https://github.com/johnalexanderg/",
