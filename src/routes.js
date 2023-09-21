@@ -57,7 +57,26 @@ router.post("/login", async (req, res) => {
   return res.status(200).json({ token });
 });
 
-router.post("/tasks", async (req, res) => {
+router.get("/getAllTasksByUserId/:id", async (req, res) => {
+  const { id } = req.params;
+  const token = req.headers.authorization;
+  let user = null;
+  if (token && typeof token !== "undefined") {
+    user = await verifyToken(token.substring(7));
+  }
+
+  if (!user) {
+    return res.status(401).json({ message: "Usuario no autorizado" });
+  }
+
+  const psgQuery = "SELECT * FROM tasks WHERE user_id = $1;";
+  const values = [Number(id)];
+  const result = await pool.query(psgQuery, values);
+
+  return res.status(200).json(result.rows);
+});
+
+router.post("/createTask", async (req, res) => {
   const {
     user_id: userId,
     title,
@@ -81,6 +100,45 @@ router.post("/tasks", async (req, res) => {
   await pool.query(psgQuery, values);
 
   return res.status(201).json({ message: "Tarea creada" });
+});
+
+router.put("/editTask/", async (req, res) => {
+  const { id, title, description, due_date: dueDate, status } = req.body;
+  const token = req.headers.authorization;
+  let user = null;
+  if (token && typeof token !== "undefined") {
+    user = await verifyToken(token.substring(7));
+  }
+
+  if (!user) {
+    return res.status(401).json({ message: "Usuario no autorizado" });
+  }
+
+  const psgQuery =
+    "UPDATE tasks SET title = $2, description = $3, due_date = $4, status = $5 WHERE id = $1;";
+  const values = [id, title, description, dueDate, status];
+  await pool.query(psgQuery, values);
+
+  return res.status(200).json({ message: "Tarea actualizada" });
+});
+
+router.delete("/deleteTask", async (req, res) => {
+  const { id } = req.body;
+  const token = req.headers.authorization;
+  let user = null;
+  if (token && typeof token !== "undefined") {
+    user = await verifyToken(token.substring(7));
+  }
+
+  if (!user) {
+    return res.status(401).json({ message: "Usuario no autorizado" });
+  }
+
+  const psgQuery = "DELETE FROM tasks WHERE id = $1;";
+  const values = [id];
+  await pool.query(psgQuery, values);
+
+  return res.status(200).json({ message: "Tarea eliminada" });
 });
 
 module.exports = router;
