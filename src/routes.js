@@ -26,7 +26,7 @@ router.post("/register", async (req, res) => {
 
   const token = generateToken(user.rows[0]);
 
-  return res.status(201).json(token);
+  return res.status(201).json({ token });
 });
 
 router.post("/login", async (req, res) => {
@@ -49,6 +49,7 @@ router.post("/login", async (req, res) => {
 
   const hashedPassword = user.rows[0].password;
   const isValidPassword = await validatePassword(password, hashedPassword);
+  console.log("🚀 ~ file: routes.js:51 ~ router.post ~ user:", user.rows[0]);
 
   if (!isValidPassword) {
     return res.status(401).json({ message: "Contraseña incorrecta" });
@@ -76,7 +77,7 @@ router.get("/getAllTasksByUserId/:id", async (req, res) => {
     return res.status(401).json({ message: "Usuario no autorizado" });
   }
 
-  const psgQuery = "SELECT * FROM tasks WHERE user_id = $1;";
+  const psgQuery = "SELECT * FROM tasks WHERE user_id = $1 ORDER BY status;";
   const values = [Number(id)];
   const result = await pool.query(psgQuery, values);
 
