@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const { generateToken, verifyToken } = require("./auth");
 const pool = require("./database");
-const getUserByToken = require("./utils");
+const { validatePassword } = require("./utils");
 
 const router = express.Router();
 
@@ -45,6 +45,13 @@ router.post("/login", async (req, res) => {
 
   if (user.rows.length === 0) {
     return res.status(400).json({ message: "Usuario no encontrado" });
+  }
+
+  const hashedPassword = user.rows[0].password;
+  const isValidPassword = await validatePassword(password, hashedPassword);
+
+  if (!isValidPassword) {
+    return res.status(401).json({ message: "Contraseña incorrecta" });
   }
 
   let token = req.headers.authorization;

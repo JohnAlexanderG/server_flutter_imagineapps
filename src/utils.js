@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs");
 const pool = require("./database");
 
 async function getUserByToken(token) {
@@ -11,7 +12,11 @@ async function getUserByToken(token) {
   }
 
   return result.rows[0];
-};
+}
 
+async function validatePassword(password, hashedPassword) {
+  const result = await bcrypt.compare(password, hashedPassword);
+  return result;
+}
 
-module.exports = getUserByToken
+module.exports = { getUserByToken, validatePassword };
