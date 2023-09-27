@@ -6,8 +6,9 @@ const { validatePassword } = require("./utils");
 
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
+router.put("/register/:id", async (req, res) => {
   const { name, email, password } = req.body;
+  const id = req.params.id;
 
   if (!name || !email || !password) {
     return res
@@ -18,9 +19,9 @@ router.post("/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const psgQuery =
-    "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *";
+    "INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4) RETURNING *";
 
-  const values = [name, email, hashedPassword];
+  const values = [id.toString(), name, email, hashedPassword];
 
   const user = await pool.query(psgQuery, values);
 
@@ -78,7 +79,7 @@ router.get("/getAllTasksByUserId/:id", async (req, res) => {
   }
 
   const psgQuery = "SELECT * FROM tasks WHERE user_id = $1 ORDER BY status;";
-  const values = [Number(id)];
+  const values = [id.toString()];
   const result = await pool.query(psgQuery, values);
 
   return res.status(200).json(result.rows);
